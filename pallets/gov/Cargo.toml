@@ -13,81 +13,36 @@ readme = 'README.md'
 [package.metadata.docs.rs]
 targets = ['x86_64-unknown-linux-gnu']
 
-[dev-dependencies.serde]
-version = '1.0.126'
-
-[dependencies.sp-core]
-default-features = false
-version = '3.0.0'
-
-[dev-dependencies.sp-io]
-default-features = false
-version = '3.0.0'
-
-[dependencies.sp-runtime]
-default-features = false
-version = '3.0.0'
-
+# alias "parity-scale-code" to "codec"
 [dependencies.codec]
 default-features = false
 features = ['derive']
 package = 'parity-scale-codec'
 version = '2.0.0'
 
-[dependencies.frame-benchmarking]
-default-features = false
-optional = true
-version = '3.0.0'
+[dependencies]
+frame-support = { default-features = false, version = '3.0.0' }
+frame-system = { default-features = false, version = '3.0.0' }
+sp-core = { default-features = false, version = '3.0.0' }
+sp-io = { default-features = false, version = '3.0.0' }
+sp-runtime = { default-features = false, version = '3.0.0' }
+sp-std = { default-features = false, version = '3.0.0' }
+sp-trie = { default-features = false, version = '3.0.0' }
+trie-db = { default-features = false, version = '0.22.6' }
+tiny-keccak = { default-features = false, features = ['keccak'], version = '2.0.0' }
+hash256-std-hasher = { default-features = false, version = '0.15.2' }
+hash-db = { default-features = false, version = '0.12.4' }
+hex = { default-features = false, version = '0.4.3' }
 
-[dependencies.frame-support]
-default-features = false
-version = '3.0.0'
-
-[dependencies.frame-system]
-default-features = false
-version = '3.0.0'
-
-[dependencies.trie-db]
-default-features = false
-version = '0.22.6'
-
-[dependencies.sp-std]
-default-features = false
-version = '3.0.0'
-
-[dependencies.sp-trie]
-default-features = false
-version = '3.0.0'
-
-[dependencies.hash-db]
-default-features = false
-version = '0.12.4'
-
-[dependencies.hex]
-default-features = false
-version = '0.4.3'
-
-[dependencies.tiny-keccak]
-default-features = false
-features = ['keccak']
-version = '2.0.0'
-
-[dependencies.hash256-std-hasher]
-default-features = false
-version = '0.15.2'
-
-[dependencies.log]
-default-features = false
-version = '0.4.8'
+[dev-dependencies]
+serde = { version = "1.0.119" }
 
 [features]
 default = ['std']
-runtime-benchmarks = ['frame-benchmarking']
 std = [
     'codec/std',
     'frame-support/std',
     'frame-system/std',
-    'frame-benchmarking/std',
     'sp-std/std',
     'sp-trie/std',
     'trie-db/std',

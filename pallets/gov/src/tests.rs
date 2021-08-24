@@ -1,4 +1,4 @@
-use crate::{mock::*, Error, Event, mock};
+use crate::{mock::*, Error, Event, RawEvent, mock};
 use frame_support::{assert_noop, assert_ok};
 use sp_core::{
     H256,
@@ -59,7 +59,7 @@ fn verifies_proof() {
         assert_ok!(GovModule::verify_proof(Origin::signed(1), block_number, proof, key, value));
 
         // Check that the correct event is emitted
-		let expected_event = mock::Event::GovModule(Event::VerifyProof(true));
+		let expected_event = mock::Event::pallet_gov(RawEvent::VerifyProof(true));
 
 		assert_eq!(System::events()[0].event, expected_event,);
 
