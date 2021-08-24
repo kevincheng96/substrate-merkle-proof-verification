@@ -5,11 +5,11 @@
 /// <https://substrate.dev/docs/en/knowledgebase/runtime/frame>
 pub use pallet::*;
 
-// #[cfg(test)]
-// mod mock;
+#[cfg(test)]
+mod mock;
 
-// #[cfg(test)]
-// mod tests;
+#[cfg(test)]
+mod tests;
 
 // #[cfg(feature = "runtime-benchmarks")]
 // mod benchmarking;
@@ -18,19 +18,18 @@ pub use pallet::*;
 pub mod pallet {
 	use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
 	use frame_system::pallet_prelude::*;
+	use sp_runtime::{print, runtime_logger::RuntimeLogger};
 	use sp_std::{vec::Vec};
 	use sp_core::{
 		Bytes,
 		H256,
 		Hasher
-		// KeccakHasher
 	};
 	use sp_trie::{Layout, NodeCodec};
 	use codec::{Decode, Encode};
 	use trie_db::{proof::{verify_proof, VerifyError}, TrieLayout, TrieConfiguration, TrieHash};
-	// use hash_db::Hasher;
-	// use keccak_hasher::KeccakHasher;
 	use hash256_std_hasher::Hash256StdHasher;
+	use log::{info};
 	use tiny_keccak;
 	use hex;
 
@@ -142,6 +141,9 @@ pub mod pallet {
 		/// TODO
 		#[pallet::weight(10_000)]
 		pub fn verify_proof(origin: OriginFor<T>, block_number: T::BlockNumber, proof: Vec<Vec<u8>>, key: Vec<u8>, value: Vec<u8>) -> DispatchResult {
+			RuntimeLogger::init();
+			log::info!("LOG INFO WORKED!");
+
 			// Check that the extrinsic was signed and get the signer.
 			// This function will return an error if the extrinsic is not signed.
 			// https://substrate.dev/docs/en/knowledgebase/runtime/origin
@@ -152,12 +154,16 @@ pub mod pallet {
 
 			let items = [(key, Some(value))];
 
-			// NEED TO UNWRAP ERROR.
-			let result = verify_trie_proof::<Layout<KeccakHasher>, _, _, Vec<u8>>(&storage_root, &proof, &items);
+			let result = verify_trie_proof::<Layout<KeccakHasher>, _, _, Vec<u8>>(&storage_root, &proof, &items).map_err(|e| {
+				log::info!("Proof not verified!");
+				// TRY TO PRINT OUT ERROR MESSAGE
+				Self::deposit_event(Event::VerifyProof(false));
+				return DispatchError::Other("Verification error!"); 
+			});
 
-			// Emit an event.
-			// TODO: ONLY EMIT TRUE IF PROOF WORKED
+			log::info!("Proof verified!");
 			Self::deposit_event(Event::VerifyProof(true));
+
 			// Return a successful DispatchResultWithPostInfo
 			Ok(())
 		}
@@ -181,7 +187,6 @@ pub mod pallet {
 		K: 'a + AsRef<[u8]>,
 		V: 'a + AsRef<[u8]>,
 	{
-		// L::Hash = KeccakHasher
 		verify_proof::<Layout<L::Hash>, _, _, _>(root, proof, items)
 	}
 }

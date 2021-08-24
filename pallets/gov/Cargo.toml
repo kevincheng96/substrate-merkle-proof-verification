@@ -18,21 +18,15 @@ version = '1.0.126'
 
 [dependencies.sp-core]
 default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-tag = 'monthly-2021-08'
-version = '4.0.0-dev'
+version = '3.0.0'
 
 [dev-dependencies.sp-io]
 default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-tag = 'monthly-2021-08'
-version = '4.0.0-dev'
+version = '3.0.0'
 
-[dev-dependencies.sp-runtime]
+[dependencies.sp-runtime]
 default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-tag = 'monthly-2021-08'
-version = '4.0.0-dev'
+version = '3.0.0'
 
 [dependencies.codec]
 default-features = false
@@ -42,22 +36,16 @@ version = '2.0.0'
 
 [dependencies.frame-benchmarking]
 default-features = false
-git = 'https://github.com/paritytech/substrate.git'
 optional = true
-tag = 'monthly-2021-08'
-version = '4.0.0-dev'
+version = '3.0.0'
 
 [dependencies.frame-support]
 default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-tag = 'monthly-2021-08'
-version = '4.0.0-dev'
+version = '3.0.0'
 
 [dependencies.frame-system]
 default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-tag = 'monthly-2021-08'
-version = '4.0.0-dev'
+version = '3.0.0'
 
 [dependencies.trie-db]
 default-features = false
@@ -69,9 +57,7 @@ version = '3.0.0'
 
 [dependencies.sp-trie]
 default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-tag = 'monthly-2021-08'
-version = '4.0.0-dev'
+version = '3.0.0'
 
 [dependencies.hash-db]
 default-features = false
@@ -90,6 +76,10 @@ version = '2.0.0'
 default-features = false
 version = '0.15.2'
 
+[dependencies.log]
+default-features = false
+version = '0.4.8'
+
 [features]
 default = ['std']
 runtime-benchmarks = ['frame-benchmarking']
@@ -104,4 +94,3 @@ std = [
     'hash-db/std',
     'hex/std',
 ]
-try-runtime = ['frame-support/try-runtime']

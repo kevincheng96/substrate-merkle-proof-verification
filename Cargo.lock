@@ -3913,6 +3913,7 @@ dependencies = [
  "hash-db 0.12.4",
  "hash256-std-hasher",
  "hex",
+ "log",
  "parity-scale-codec",
  "serde",
  "sp-core",
