@@ -2036,12 +2036,6 @@ dependencies = [
 
 [[package]]
 name = "hash-db"
-version = "0.12.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b3c95a428c86ed4633d83e07ef9e0a147a906da01e931f07e74a85bedce5a43"
-
-[[package]]
-name = "hash-db"
 version = "0.15.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d23bd4e7b5eda0d0f3a307e8b381fdc8ba9000f26fbe912250c0a4cc3956364a"
@@ -3308,7 +3302,7 @@ version = "0.26.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "814bbecfc0451fc314eeea34f05bbcd5b98a7ad7af37faee088b86a1e633f1d4"
 dependencies = [
- "hash-db 0.15.2",
+ "hash-db",
  "hashbrown 0.9.1",
  "parity-util-mem",
 ]
@@ -3551,15 +3545,6 @@ dependencies = [
  "cfg-if 0.1.10",
  "libc",
  "winapi 0.3.9",
-]
-
-[[package]]
-name = "nibble_vec"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "77a5d83df9f36fe23f0c3648c6bbb8b0298bb5f1939c8f2704431371f4b84d43"
-dependencies = [
- "smallvec 1.6.1",
 ]
 
 [[package]]
@@ -3822,10 +3807,7 @@ version = "1.0.0"
 dependencies = [
  "frame-support",
  "frame-system",
- "hash-db 0.12.4",
- "hash256-std-hasher",
  "hex",
- "nibble_vec",
  "parity-scale-codec",
  "patricia-trie",
  "rlp",
@@ -3834,9 +3816,7 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std",
- "sp-trie",
  "tiny-keccak",
- "trie-db",
 ]
 
 [[package]]
@@ -5256,7 +5236,7 @@ dependencies = [
  "derive_more",
  "fnv",
  "futures 0.3.11",
- "hash-db 0.15.2",
+ "hash-db",
  "kvdb",
  "lazy_static",
  "log 0.4.13",
@@ -5289,7 +5269,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5741e447d71ff36c147f961b2271b6b3fad0cc347e96936bc8b63ddffa594b27"
 dependencies = [
  "blake2-rfc",
- "hash-db 0.15.2",
+ "hash-db",
  "kvdb",
  "kvdb-memorydb",
  "kvdb-rocksdb",
@@ -5628,7 +5608,7 @@ version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "04e8dbcb2951f7cf76ddf97ed26dcef0dab79d76745de4a8f169d58236ea8704"
 dependencies = [
- "hash-db 0.15.2",
+ "hash-db",
  "lazy_static",
  "parity-scale-codec",
  "parking_lot 0.11.1",
@@ -5772,7 +5752,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "750397c6aa5a4f922cac99599ad74a4082e3e87553d51ceb4c48abfa056ff32c"
 dependencies = [
  "futures 0.3.11",
- "hash-db 0.15.2",
+ "hash-db",
  "jsonrpc-core",
  "jsonrpc-pubsub",
  "log 0.4.13",
@@ -5855,7 +5835,7 @@ dependencies = [
  "futures 0.1.30",
  "futures 0.3.11",
  "futures-timer 3.0.2",
- "hash-db 0.15.2",
+ "hash-db",
  "jsonrpc-core",
  "jsonrpc-pubsub",
  "lazy_static",
@@ -6414,7 +6394,7 @@ version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e63c3460d5daecf67df542c34c2bbd636214a5a200d4bddcfa2ffb9e72c346af"
 dependencies = [
- "hash-db 0.15.2",
+ "hash-db",
  "parity-scale-codec",
  "sp-api-proc-macro",
  "sp-core",
@@ -6619,7 +6599,7 @@ dependencies = [
  "dyn-clonable",
  "ed25519-dalek",
  "futures 0.3.11",
- "hash-db 0.15.2",
+ "hash-db",
  "hash256-std-hasher",
  "hex",
  "impl-serde",
@@ -6723,7 +6703,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "33fd69f0a6e91bedc2fb1c5cc3689c212474b6c918274cb4cb14dbbe3c428c14"
 dependencies = [
  "futures 0.3.11",
- "hash-db 0.15.2",
+ "hash-db",
  "libsecp256k1",
  "log 0.4.13",
  "parity-scale-codec",
@@ -6895,7 +6875,7 @@ version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "46fa4143e58e9130f726d4e8a9b86f3530a8bd19a2eedcdcf4af205f4b5a6d4f"
 dependencies = [
- "hash-db 0.15.2",
+ "hash-db",
  "log 0.4.13",
  "num-traits",
  "parity-scale-codec",
@@ -6998,7 +6978,7 @@ version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b85b7f745da41ef825c6f7b93f1fdc897b03df94a4884adfbb70fbcd0aed1298"
 dependencies = [
- "hash-db 0.15.2",
+ "hash-db",
  "memory-db",
  "parity-scale-codec",
  "sp-core",
@@ -7765,7 +7745,7 @@ version = "0.22.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9eac131e334e81b6b3be07399482042838adcd7957aa0010231d0813e39e02fa"
 dependencies = [
- "hash-db 0.15.2",
+ "hash-db",
  "hashbrown 0.11.2",
  "log 0.4.13",
  "rustc-hex",
@@ -7778,7 +7758,7 @@ version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "652931506d2c1244d7217a70b99f56718a7b4161b37f04e7cd868072a99f68cd"
 dependencies = [
- "hash-db 0.15.2",
+ "hash-db",
 ]
 
 [[package]]
