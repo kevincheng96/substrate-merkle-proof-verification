@@ -87,7 +87,7 @@ decl_module! {
 		/// An example dispatchable that takes a singles value as a parameter, writes the value to
 		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
 		#[weight = 10_000 + T::DbWeight::get().writes(1)]
-		pub fn store_storage_root(origin, block_number: T::BlockNumber, storage_root: StorageRoot) -> DispatchResult {
+		pub fn store_storage_root(origin, eth_block_number: T::BlockNumber, storage_root: StorageRoot) -> DispatchResult {
 			// Check that the extrinsic was signed and get the signer.
 			// This function will return an error if the extrinsic is not signed.
 			// https://substrate.dev/docs/en/knowledgebase/runtime/origin
@@ -96,23 +96,21 @@ decl_module! {
 			// let current_block_number = <frame_system::Pallet<T>>::block_number();
 
 			// Update storage.
-			// TODO: Replace with block number of Ethereum chain.
-			<StorageRoots<T>>::insert(block_number, storage_root.clone());
+			<StorageRoots<T>>::insert(eth_block_number, storage_root.clone());
 
 			// Emit an event.
-			Self::deposit_event(RawEvent::StorageRootStored(block_number, storage_root));
+			Self::deposit_event(RawEvent::StorageRootStored(eth_block_number, storage_root));
 			// Return a successful DispatchResultWithPostInfo
 			Ok(())
 		}
 
-		/// Verify proof. Inputs are Hex encoded.
+		/// Verify proof. Inputs are byte arrays.
 		/// # Arguments
 		///
-		/// * `name` - A string slice that holds the name of the person
 		/// * `block_number` - Ethereum block number that the proof comes from.
-		/// * `proof` - 
-		/// * `key` - Key. BYTES of hex
-		/// * `val` - Value. BYTES of hex
+		/// * `proof` - Vector of proofs, where each proof is a RLP-serialized MerkleTree-Node, starting with the storage hash node.
+		/// * `key` - The storage key.
+		/// * `val` - The value stored at the storage key.
 		#[weight = 10_000]
 		pub fn verify_proof(origin, block_number: T::BlockNumber, proof: Vec<Vec<u8>>, key: Vec<u8>, value: Vec<u8>) -> DispatchResult {
 			// Check that the extrinsic was signed and get the signer.
@@ -137,6 +135,7 @@ decl_module! {
 }
 
 // TODO: Make sure the code never panics. Use unit tests to debug.
+// TODO: Do we need to cap the size of the proof? This function runs recursively. Maybe implement it iteratively as well and compare.
 pub fn verify_merkle_proof(expected_root: &Vec<u8>, proof: Vec<Vec<u8>>, key_hex_string: String, expected_value: Vec<u8>, key_index: usize, proof_index: usize) -> bool
 {
 	let node = &proof[proof_index]; // RLP encoded node
@@ -152,7 +151,8 @@ pub fn verify_merkle_proof(expected_root: &Vec<u8>, proof: Vec<Vec<u8>>, key_hex
 		// Trie root is always a hash
 		assert_eq!(keccak(node), *expected_root);
 	} else if node.len() < 32 {
-		// If rlp < 32 bytes, then it is not hashed
+		// If rlp < 32 bytes, then it is not hashed. This is based on 
+		// UNTESTED BRANCH!!!
 		// TODO: revisit this. how can vec<vec<u8>> be compared to H256???
 		// assert_eq!(decoded_node, expected_root);
 	} else {
@@ -164,6 +164,7 @@ pub fn verify_merkle_proof(expected_root: &Vec<u8>, proof: Vec<Vec<u8>>, key_hex
 	if decoded_node.len() == 17 {
 		// Branch node
 		if key_index >= key_hex_string.len() {
+			// UNTESTED BRANCH!!!
 			// We have finished traversing through the nibbles in the key. This should be the end of the proof.
 			if decoded_node.last().unwrap().clone() == expected_value {
 				return true;
@@ -192,14 +193,15 @@ pub fn verify_merkle_proof(expected_root: &Vec<u8>, proof: Vec<Vec<u8>>, key_hex
 		// TODO: CONVERT TO HEX CHAR
 		// First two nibbles are reserved for prefix
 		let prefix = from_digit(nibble_slice.at(0) as u32, 16).unwrap();
-		let nibble = from_digit(nibble_slice.at(1) as u32, 16).unwrap();
-		let key_end = &nibble_slice.mid(2).iter().map(|x| from_digit(x as u32, 16).unwrap()).collect::<String>();
-		println!("prefix: {}, nibbles: {}", prefix, nibble);
+		let nibble_after_prefix = from_digit(nibble_slice.at(1) as u32, 16).unwrap();
+		let nibbles_after_first_byte = &nibble_slice.mid(2).iter().map(|x| from_digit(x as u32, 16).unwrap()).collect::<String>();
+		println!("prefix: {}, nibble after prefix: {}", prefix, nibble_after_prefix);
 		// TODO: Simplify cases 2 and 3 since only one line of code is different (key_end)
 		// TODO: There MUST be a better way to define inline chars then this...
 		if prefix == "2".chars().next().unwrap() {
 			// Even leaf node
-			// Key end does not include nibble because this is an even leaf node
+			// Key end does not include first nibble after prefix because this is an even leaf node
+			let key_end = nibbles_after_first_byte;
 			println!("even leaf node key end is: {}", key_end);
 			let value: Vec<u8> = rlp::decode(&decoded_node[1]).unwrap();
 			println!("value is: {:?}", value);
@@ -214,8 +216,8 @@ pub fn verify_merkle_proof(expected_root: &Vec<u8>, proof: Vec<Vec<u8>>, key_hex
 		} 
 		else if prefix == "3".chars().next().unwrap() {
 			// Odd leaf node
-			// Key end includes nibble because this is an odd leaf node
-			let key_end = nibble.to_string() + key_end;
+			// Key end includes first nibble after prefix because this is an odd leaf node
+			let key_end = nibble_after_prefix.to_string() + nibbles_after_first_byte;
 			println!("odd leaf node key end is: {}", key_end);
 			let value: Vec<u8> = rlp::decode(&decoded_node[1]).unwrap();
 			println!("value is: {:?}", value);
@@ -229,14 +231,37 @@ pub fn verify_merkle_proof(expected_root: &Vec<u8>, proof: Vec<Vec<u8>>, key_hex
 			}
 		}
 		else if prefix == "0".chars().next().unwrap() {
-			// TODO
+			// UNTESTED BRANCH!!!
+			// Even extension node
 			println!("Even extension node");
+			// Shared nibbles does not include first nibble after prefix because this is an even extension node
+			let shared_nibbles = nibbles_after_first_byte;
+			// Len should return number of characters since each nibble is a hexadecimal character.
+			let new_key_index = key_index + shared_nibbles.len();
+			if shared_nibbles == &key_hex_string[key_index..new_key_index] {
+				let new_expected_root = &decoded_node[1];
+				return verify_merkle_proof(new_expected_root, proof, key_hex_string, expected_value, new_key_index, proof_index + 1);
+				println!("PROVED!");
+				return true;
+			}
 		}
 		else if prefix == "1".chars().next().unwrap() {
-			// TODO
+			// UNTESTED BRANCH!!!
+			// Odd extension node
 			println!("Odd extension node");
+			// Shared nibbles includes first nibble after prefix because this is an odd extension node
+			let shared_nibbles = nibble_after_prefix.to_string() + nibbles_after_first_byte;
+			// Len should return number of characters since each nibble is a hexadecimal character.
+			let new_key_index = key_index + shared_nibbles.len();
+			if shared_nibbles == &key_hex_string[key_index..new_key_index] {
+				let new_expected_root = &decoded_node[1];
+				return verify_merkle_proof(new_expected_root, proof, key_hex_string, expected_value, new_key_index, proof_index + 1);
+				println!("PROVED!");
+				return true;
+			}
 		}
 		else {
+			// UNTESTED BRANCH!!!
 			// This should not be reached if the proof has the correct format
 			return false;
 		}
