@@ -20,10 +20,6 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
-/// Define types
-// #[derive(Copy, Clone, Eq, PartialEq, Encode, Decode, RuntimeDebug, Types)]
-// pub struct StorageRoot {
-// }
 // Storage root stored as bytes.
 // TODO: Explore making this sp_core::Bytes or Vec<u8>
 pub type StorageRoot = H256;
@@ -98,7 +94,6 @@ decl_module! {
 		}
 
 		/// Verify proof. Inputs are byte arrays.
-		/// # Arguments
 		///
 		/// * `block_number` - Ethereum block number that the proof comes from.
 		/// * `proof` - Vector of proofs, where each proof is a RLP-serialized MerkleTree-Node, starting with the storage hash node.

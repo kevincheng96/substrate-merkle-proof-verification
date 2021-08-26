@@ -7,6 +7,7 @@ use rlp;
 // TODO: Do we need to cap the size of the proof? This function runs recursively. Maybe implement it iteratively as well and compare.
 pub fn verify_merkle_proof(expected_root: &Vec<u8>, proof: Vec<Vec<u8>>, key_hex_string: String, expected_value: Vec<u8>, key_index: usize, proof_index: usize) -> bool
 {
+	// TODO: rename to rlp_node
 	let node = &proof[proof_index]; // RLP encoded node
 	println!("node is: ");
 	println!("{:?}", node);
@@ -20,10 +21,12 @@ pub fn verify_merkle_proof(expected_root: &Vec<u8>, proof: Vec<Vec<u8>>, key_hex
 		// Trie root is always a hash
 		assert_eq!(keccak(node), *expected_root);
 	} else if node.len() < 32 {
-		// If rlp < 32 bytes, then it is not hashed. This is based on 
-		// UNTESTED BRANCH!!!
-		// TODO: revisit this. how can vec<vec<u8>> be compared to H256???
-		// assert_eq!(decoded_node, expected_root);
+        // UNTESTED BRANCH!!!
+		// If rlp(node) < 32 bytes, then the node is stored directly in the trie.
+        // See function 196 in Ethereum yellow paper for node composition.
+		// TODO: Not sure if correct to flatten the decoded_node bytes to enable comparison with expected_root.
+		let flattened_decoded_node_bytes: Vec<u8> = decoded_node.iter().cloned().flatten().collect();
+		assert_eq!(flattened_decoded_node_bytes, *expected_root);
 	} else {
 		assert_eq!(keccak(node), *expected_root);
 	}
@@ -59,7 +62,6 @@ pub fn verify_merkle_proof(expected_root: &Vec<u8>, proof: Vec<Vec<u8>>, key_hex
 		println!("In EXTENSION or LEAF");
 		// Need to get nibble. This is getting each byte.
 		let nibble_slice = NibbleSlice::new(&decoded_node[0]);
-		// TODO: CONVERT TO HEX CHAR
 		// First two nibbles are reserved for prefix
 		let prefix = from_digit(nibble_slice.at(0) as u32, 16).unwrap();
 		let nibble_after_prefix = from_digit(nibble_slice.at(1) as u32, 16).unwrap();
@@ -100,7 +102,6 @@ pub fn verify_merkle_proof(expected_root: &Vec<u8>, proof: Vec<Vec<u8>>, key_hex
 			}
 		}
 		else if prefix == "0".chars().next().unwrap() {
-			// UNTESTED BRANCH!!!
 			// Even extension node
 			println!("Even extension node");
 			// Shared nibbles does not include first nibble after prefix because this is an even extension node
@@ -115,7 +116,6 @@ pub fn verify_merkle_proof(expected_root: &Vec<u8>, proof: Vec<Vec<u8>>, key_hex
 			}
 		}
 		else if prefix == "1".chars().next().unwrap() {
-			// UNTESTED BRANCH!!!
 			// Odd extension node
 			println!("Odd extension node");
 			// Shared nibbles includes first nibble after prefix because this is an odd extension node
