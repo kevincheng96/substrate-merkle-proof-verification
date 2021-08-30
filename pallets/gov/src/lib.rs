@@ -93,6 +93,8 @@ decl_module! {
 			Ok(())
 		}
 
+		/// TODO: Think about how we can verify that a proof came from a specific Ethereum address.
+		/// TODO: Instead of simply verifying a proof, we should also pull out the `votes` value.
 		/// Verify proof. Inputs are byte arrays.
 		///
 		/// * `block_number` - Ethereum block number that the proof comes from.
