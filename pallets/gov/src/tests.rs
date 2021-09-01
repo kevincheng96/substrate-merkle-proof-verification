@@ -1,5 +1,5 @@
-use crate::{mock::*, Error, Event, RawEvent, mock};
-use frame_support::{assert_noop, assert_ok};
+use crate::{mock::*, RawEvent, mock};
+use frame_support::{assert_ok};
 use sp_core::{
     H256,
 };
@@ -29,7 +29,7 @@ fn stores_storage_root() {
 
        // Check that the correct event is emitted
        let expected_event = mock::Event::pallet_gov(RawEvent::StorageRootStored(block_number, storage_root));
-       assert_eq!(System::events()[0].event, expected_event,);
+       assert_eq!(System::events()[0].event, expected_event);
 
         println!("{}", GovModule::storage_root(block_number));
 	});
@@ -38,7 +38,6 @@ fn stores_storage_root() {
 #[test]
 fn verifies_proof_with_odd_leaf_node() {
 	new_test_ext().execute_with(|| {
-        println!("LOG: starting test");
         let block_number: u64 = 13084960;
         let storage_root_bytes: [u8; 32] = str_to_hash("0x80c9a98e6d091d9870fa6e26f5d935dd6174a4564600e929011f682a825aa5b8").unwrap();
         let storage_root: H256 = H256(storage_root_bytes);
@@ -61,9 +60,7 @@ fn verifies_proof_with_odd_leaf_node() {
 
         // Check that the correct event is emitted
 		let expected_event = mock::Event::pallet_gov(RawEvent::VerifyProof(true));
-		assert_eq!(System::events()[1].event, expected_event,);
-
-        println!("{}", GovModule::storage_root(block_number));
+		assert_eq!(System::events()[1].event, expected_event);
 	});
 }
 
@@ -71,7 +68,6 @@ fn verifies_proof_with_odd_leaf_node() {
 #[test]
 fn invalidates_proof_with_odd_leaf_node() {
 	new_test_ext().execute_with(|| {
-        println!("LOG: starting test");
         let block_number: u64 = 13084960;
         let storage_root_bytes: [u8; 32] = str_to_hash("0x80c9a98e6d091d9870fa6e26f5d935dd6174a4564600e929011f682a825aa5b8").unwrap();
         let storage_root: H256 = H256(storage_root_bytes);
@@ -94,17 +90,14 @@ fn invalidates_proof_with_odd_leaf_node() {
         assert_ok!(GovModule::verify_proof(Origin::signed(1), block_number, proof, key, value));
 
         // Check that the correct event is emitted
-		let expected_event = mock::Event::pallet_gov(RawEvent::VerifyProof(true));
-		assert_eq!(System::events()[1].event, expected_event,);
-
-        println!("{}", GovModule::storage_root(block_number));
+		let expected_event = mock::Event::pallet_gov(RawEvent::VerifyProof(false));
+		assert_eq!(System::events()[1].event, expected_event);
 	});
 }
 
 #[test]
 fn verifies_proof_with_even_leaf_node() {
 	new_test_ext().execute_with(|| {
-        println!("LOG: starting test");
         let block_number: u64 = 13096010;
         let storage_root_bytes: [u8; 32] = str_to_hash("0x4931119b41f0d0047162d6ceb4bd6f73e8932c5ad7360d39d6febd033ecc1ac7").unwrap();
         let storage_root: H256 = H256(storage_root_bytes);
@@ -128,9 +121,7 @@ fn verifies_proof_with_even_leaf_node() {
 
         // Check that the correct event is emitted
 		let expected_event = mock::Event::pallet_gov(RawEvent::VerifyProof(true));
-		assert_eq!(System::events()[1].event, expected_event,);
-
-        println!("{}", GovModule::storage_root(block_number));
+		assert_eq!(System::events()[1].event, expected_event);
 	});
 }
 
@@ -138,7 +129,6 @@ fn verifies_proof_with_even_leaf_node() {
 fn verifies_proof_with_odd_extension_node() {
 	new_test_ext().execute_with(|| {
         // Address 0x0119d800835BE09030d0ebF072c0A8C381a70157
-        println!("LOG: starting test");
         let block_number: u64 = 13096010;
         let storage_root_bytes: [u8; 32] = str_to_hash("0x8a4002a7af8c1c1eb2cf68f6fcc289f27cbc36740aa87d899d1e5d420312abfe").unwrap();
         let storage_root: H256 = H256(storage_root_bytes);
@@ -163,9 +153,7 @@ fn verifies_proof_with_odd_extension_node() {
 
         // Check that the correct event is emitted
 		let expected_event = mock::Event::pallet_gov(RawEvent::VerifyProof(true));
-		assert_eq!(System::events()[1].event, expected_event,);
-
-        println!("{}", GovModule::storage_root(block_number));
+		assert_eq!(System::events()[1].event, expected_event);
 	});
 }
 
@@ -173,7 +161,6 @@ fn verifies_proof_with_odd_extension_node() {
 fn verifies_proof_with_even_extension_node() {
 	new_test_ext().execute_with(|| {
         // Address 0x02a9A4dA25996623bf2db451a22D70CF7b46Fdb0
-        println!("LOG: starting test");
         let block_number: u64 = 13096010;
         let storage_root_bytes: [u8; 32] = str_to_hash("0xd73c7e14e051e1acc08e023cd30a08409520de8932edd335a91426880726834c").unwrap();
         let storage_root: H256 = H256(storage_root_bytes);
@@ -198,16 +185,6 @@ fn verifies_proof_with_even_extension_node() {
 
         // Check that the correct event is emitted
 		let expected_event = mock::Event::pallet_gov(RawEvent::VerifyProof(true));
-		assert_eq!(System::events()[1].event, expected_event,);
-
-        println!("{}", GovModule::storage_root(block_number));
+		assert_eq!(System::events()[1].event, expected_event);
 	});
 }
-
-// #[test]
-// fn correct_error_for_none_value() {
-// 	new_test_ext().execute_with(|| {
-// 		// Ensure the expected error is thrown when no value is present.
-// 		assert_noop!(GovModule::cause_error(Origin::signed(1)), Error::<Test>::NoneValue);
-// 	});
-// }

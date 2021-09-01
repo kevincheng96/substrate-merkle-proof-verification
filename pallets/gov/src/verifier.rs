@@ -3,26 +3,29 @@ use sp_std::{vec::Vec};
 use patricia_trie::NibbleSlice;
 use rlp;
 
-// TODO: Make sure the code never panics. Use unit tests to debug.
 // TODO: Do we need to cap the size of the proof? This function runs recursively. Maybe implement it iteratively as well and compare.
-pub fn verify_merkle_proof(expected_root: &Vec<u8>, proof: Vec<Vec<u8>>, key_hex_string: String, expected_value: Vec<u8>, key_index: usize, proof_index: usize) -> bool
+pub fn verify_merkle_proof(
+	expected_root: &Vec<u8>, 
+	proof: Vec<Vec<u8>>, key_hex_string: String, 
+	expected_value: Vec<u8>, 
+	key_index: usize, 
+	proof_index: usize) -> bool
 {
-	// TODO: rename to rlp_node
-	let node = &proof[proof_index]; // RLP encoded node
-	let decoded_node: Vec<Vec<u8>> = rlp::decode_list(node);
+	let rlp_node = &proof[proof_index]; // RLP encoded node
+	let decoded_node: Vec<Vec<u8>> = rlp::decode_list(rlp_node);
 
 	if key_index == 0 {
 		// Trie root is always a hash
-		assert_eq!(keccak(node), *expected_root);
-	} else if node.len() < 32 {
+		if keccak(rlp_node) != *expected_root {return false};
+	} else if rlp_node.len() < 32 {
         // UNTESTED BRANCH!!!
 		// If rlp(node) < 32 bytes, then the node is stored directly in the trie.
         // See function 196 in Ethereum yellow paper for node composition.
 		// TODO: Not sure if correct to flatten the decoded_node bytes to enable comparison with expected_root.
 		let flattened_decoded_node_bytes: Vec<u8> = decoded_node.iter().cloned().flatten().collect();
-		assert_eq!(flattened_decoded_node_bytes, *expected_root);
+		if flattened_decoded_node_bytes != *expected_root {return false};
 	} else {
-		assert_eq!(keccak(node), *expected_root);
+		if keccak(rlp_node) != *expected_root {return false};
 	}
 
 	println!("Node verified for proof index: {}", proof_index);
