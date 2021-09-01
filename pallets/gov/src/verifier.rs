@@ -1,12 +1,21 @@
-use sp_std::prelude::*;
-use sp_std::{vec::Vec};
+// TODO: Figure out if patricia_trie supports no_std.
 use patricia_trie::NibbleSlice;
 use rlp;
+
+#[cfg(not(feature = "std"))]
+use alloc::vec::Vec;
+use core::char;
+
+const EVEN_EXTENSION_PREFIX: char = b'0' as char;
+const ODD_EXTENSION_PREFIX: char = b'1' as char;
+const EVEN_LEAF_PREFIX: char = b'2' as char;
+const ODD_LEAF_PREFIX: char = b'3' as char;
 
 // TODO: Do we need to cap the size of the proof? This function runs recursively. Maybe implement it iteratively as well and compare.
 pub fn verify_merkle_proof(
 	expected_root: &Vec<u8>, 
-	proof: Vec<Vec<u8>>, key_hex_string: String, 
+	proof: Vec<Vec<u8>>, 
+	key_hex_string: String, 
 	expected_value: Vec<u8>, 
 	key_index: usize, 
 	proof_index: usize) -> bool
@@ -27,8 +36,6 @@ pub fn verify_merkle_proof(
 	} else {
 		if keccak(rlp_node) != *expected_root {return false};
 	}
-
-	println!("Node verified for proof index: {}", proof_index);
 
 	if decoded_node.len() == 17 {
 		// Branch node
@@ -58,47 +65,38 @@ pub fn verify_merkle_proof(
 		let prefix = from_digit(nibble_slice.at(0) as u32, 16).unwrap();
 		let nibble_after_prefix = from_digit(nibble_slice.at(1) as u32, 16).unwrap();
 		let nibbles_after_first_byte = &nibble_slice.mid(2).iter().map(|x| from_digit(x as u32, 16).unwrap()).collect::<String>();
-		// TODO: Simplify cases 2 and 3 since only one line of code is different (key_end)
-		// TODO: There MUST be a better way to define inline chars then this...
-		if prefix == "2".chars().next().unwrap() {
-			// Even leaf node
-			// Key end does not include first nibble after prefix because this is an even leaf node
-			let key_end = nibbles_after_first_byte;
+		if prefix == EVEN_LEAF_PREFIX || prefix == ODD_LEAF_PREFIX {
+			// Leaf node
+			let key_end: String;
+			if prefix == EVEN_LEAF_PREFIX {
+				// Even leaf node
+				// Key end does not include first nibble after prefix because this is an even leaf node
+				key_end = nibbles_after_first_byte.to_string();
+			} else {
+				// Odd leaf node
+				// Key end includes first nibble after prefix because this is an odd leaf node
+				key_end = nibble_after_prefix.to_string() + nibbles_after_first_byte;
+			}
 			let value: Vec<u8> = rlp::decode(&decoded_node[1]).unwrap();
 			// Merkle proof is verified if the following 2 conditions are met:
 			// 1. The key_end calculated from the leaf node is equals to the remaining key nibbles (based on key_index)
 			// 2. The value decoded from the leaf node is the same as the expected_value
-			if key_end == &key_hex_string[key_index..] && expected_value == value {
+			if key_end == key_hex_string[key_index..] && expected_value == value {
 				return true;
 			}
 		} 
-		else if prefix == "3".chars().next().unwrap() {
-			// Odd leaf node
-			// Key end includes first nibble after prefix because this is an odd leaf node
-			let key_end = nibble_after_prefix.to_string() + nibbles_after_first_byte;
-			let value: Vec<u8> = rlp::decode(&decoded_node[1]).unwrap();
-			// Merkle proof is verified if the following 2 conditions are met:
-			// 1. The key_end calculated from the leaf node is equals to the remaining key nibbles (based on key_index)
-			// 2. The value decoded from the leaf node is the same as the expected_value
-			if key_end == &key_hex_string[key_index..] && expected_value == value {
-				return true;
+		else if prefix == EVEN_EXTENSION_PREFIX || prefix == ODD_EXTENSION_PREFIX {
+			// Extension node
+			let shared_nibbles: String;
+			if prefix == EVEN_EXTENSION_PREFIX {
+				// Even extension node
+				// Shared nibbles does not include first nibble after prefix because this is an even extension node
+				shared_nibbles = nibbles_after_first_byte.to_string();
+			} else {
+				// Odd extension node
+				// Shared nibbles includes first nibble after prefix because this is an odd extension node
+				shared_nibbles = nibble_after_prefix.to_string() + nibbles_after_first_byte;
 			}
-		}
-		else if prefix == "0".chars().next().unwrap() {
-			// Even extension node
-			// Shared nibbles does not include first nibble after prefix because this is an even extension node
-			let shared_nibbles = nibbles_after_first_byte;
-			// Len should return number of characters since each nibble is a hexadecimal character.
-			let new_key_index = key_index + shared_nibbles.len();
-			if shared_nibbles == &key_hex_string[key_index..new_key_index] {
-				let new_expected_root = &decoded_node[1];
-				return verify_merkle_proof(new_expected_root, proof, key_hex_string, expected_value, new_key_index, proof_index + 1);
-			}
-		}
-		else if prefix == "1".chars().next().unwrap() {
-			// Odd extension node
-			// Shared nibbles includes first nibble after prefix because this is an odd extension node
-			let shared_nibbles = nibble_after_prefix.to_string() + nibbles_after_first_byte;
 			// Len should return number of characters since each nibble is a hexadecimal character.
 			let new_key_index = key_index + shared_nibbles.len();
 			if shared_nibbles == &key_hex_string[key_index..new_key_index] {

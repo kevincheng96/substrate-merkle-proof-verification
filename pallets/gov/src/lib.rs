@@ -1,16 +1,16 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-/// Edit this file to define custom logic or remove it if it is not needed.
-/// Learn more about FRAME and the core library of Substrate FRAME pallets:
-/// https://substrate.dev/docs/en/knowledgebase/runtime/frame
+#[cfg(not(feature = "std"))]
+extern crate alloc;
 
 use frame_support::{decl_module, decl_storage, decl_event, decl_error, dispatch::{DispatchResult}, traits::Get};
 use frame_system::ensure_signed;
-use sp_std::prelude::*;
-use sp_std::{vec::Vec};
 use sp_core::{
 	H256,
 };
+
+#[cfg(not(feature = "std"))]
+use alloc::vec::Vec;
 
 mod verifier;
 
@@ -115,7 +115,7 @@ decl_module! {
 			let hex_string_key = hex::encode(hashed_key);
 			let _is_verified = match verifier::verify_merkle_proof(&storage_root.as_bytes().to_vec(), proof, hex_string_key, value, 0, 0) {
 				true => Self::deposit_event(RawEvent::VerifyProof(true)),
-				false => Self::deposit_event(RawEvent::VerifyProof(false)),
+				false => Self::deposit_event(RawEvent::VerifyProof(false)), // RETURN DISPATCHRESULT WITH ERROR HERE
 			};
 
 			// Return a successful DispatchResultWithPostInfo
