@@ -27,9 +27,9 @@ fn stores_storage_root() {
 		// Read pallet storage and assert an expected result.
 		assert_eq!(GovModule::storage_root(block_number), storage_root);
 
-       // Check that the correct event is emitted
-       let expected_event = mock::Event::pallet_gov(RawEvent::StorageRootStored(block_number, storage_root));
-       assert_eq!(System::events()[0].event, expected_event);
+        // Check that the correct event is emitted
+        let expected_event = mock::Event::pallet_gov(RawEvent::StorageRootStored(block_number, storage_root));
+        assert_eq!(System::events()[0].event, expected_event);
 
         println!("{}", GovModule::storage_root(block_number));
 	});

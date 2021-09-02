@@ -24,15 +24,14 @@ version = '2.0.0'
 frame-support = { default-features = false, version = '3.0.0' }
 frame-system = { default-features = false, version = '3.0.0' }
 sp-core = { default-features = false, version = '3.0.0' }
-sp-io = { default-features = false, version = '3.0.0' }
 sp-runtime = { default-features = false, version = '3.0.0' }
 tiny-keccak = { default-features = false, features = ['keccak'], version = '2.0.0' }
-hex = { default-features = false, version = '0.4.3' }
+hex = { default-features = false, features = ['alloc'], version = '0.4.3' }
 rlp = { default-features = false, version = '0.5.1' }
-patricia-trie = { default-features = false, version = '0.3.0' }
 
 [dev-dependencies]
 serde = { version = "1.0.119" }
+sp-io = { default-features = false, version = '3.0.0' }
 
 [features]
 default = ['std']
@@ -40,6 +39,8 @@ std = [
     'codec/std',
     'frame-support/std',
     'frame-system/std',
+    'sp-core/std',
+    'sp-runtime/std',
     'hex/std',
     'rlp/std',
 ]

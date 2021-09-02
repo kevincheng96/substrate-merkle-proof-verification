@@ -1,9 +1,7 @@
-// TODO: Figure out if patricia_trie supports no_std.
-use patricia_trie::NibbleSlice;
 use rlp;
 
 #[cfg(not(feature = "std"))]
-use alloc::vec::Vec;
+use alloc::{vec::Vec, string::{String, ToString}};
 use core::char;
 
 const EVEN_EXTENSION_PREFIX: char = b'0' as char;
@@ -58,13 +56,12 @@ pub fn verify_merkle_proof(
 	} 
 	else if decoded_node.len() == 2 {
 		// Leaf or extension node
+		let node_hex_string = hex::encode(&decoded_node[0]);
 		// Get prefix and optional nibble from the first byte
-		// Need to get nibble. This is getting each byte.
-		let nibble_slice = NibbleSlice::new(&decoded_node[0]);
-		// First two nibbles are reserved for prefix
-		let prefix = from_digit(nibble_slice.at(0) as u32, 16).unwrap();
-		let nibble_after_prefix = from_digit(nibble_slice.at(1) as u32, 16).unwrap();
-		let nibbles_after_first_byte = &nibble_slice.mid(2).iter().map(|x| from_digit(x as u32, 16).unwrap()).collect::<String>();
+		let prefix = node_hex_string.chars().nth(0).unwrap(); 
+		let nibble_after_prefix = node_hex_string.chars().nth(1).unwrap();
+		// Safe to index here since all characters are ASCII (hexadecimal string format).
+		let nibbles_after_first_byte = &node_hex_string[2..];
 		if prefix == EVEN_LEAF_PREFIX || prefix == ODD_LEAF_PREFIX {
 			// Leaf node
 			let key_end: String;
@@ -122,18 +119,4 @@ pub fn keccak(bytes: &[u8]) -> Vec<u8> {
 	hasher.update(bytes);
 	hasher.finalize(&mut hash);
 	hash.into()
-}
-
-// Taken from std::char
-#[inline]
-pub fn from_digit(num: u32, radix: u32) -> Option<char> {
-    if radix > 36 {
-        panic!("from_digit: radix is too high (maximum 36)");
-    }
-    if num < radix {
-        let num = num as u8;
-        if num < 10 { Some((b'0' + num) as char) } else { Some((b'a' + num - 10) as char) }
-    } else {
-        None
-    }
 }
